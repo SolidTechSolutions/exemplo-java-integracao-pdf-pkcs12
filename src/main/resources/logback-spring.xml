@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+<configuration>
+    <springProperty name="LOG_PATH" source="logging.file.path" defaultValue="logs" />
+    <springProperty name="LOG_FILE" source="logging.file.name" defaultValue="solidsign-example" />
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <springProperty source="spring.application.name" name="springAppName" scope="context" />
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) [%X{traceId:-noTrace},%X{spanId:-noSpan}] [%X{IP:-noIp}, %X{user:-noUser}] [%file:%line] %clr(-){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="com.solid.exemplos.config.CustomRollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>UTF-8</charset>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} %X{IP} %X{user} [%file:%line] - %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}</pattern>
+            </layout>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/arquivo/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>30MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <springProperty scope="context" name="host1" source="logging.graylog.servidores[0].host" />
+    <springProperty scope="context" name="port1" source="logging.graylog.servidores[0].port" />
+    <springProperty scope="context" name="facility1" source="logging.graylog.servidores[0].facility" />
+    
+    <appender name="syslog1" class="com.solid.exemplos.config.CustomSyslogLogbackAppender">
+        <syslogHost>${host1}</syslogHost>
+        <port>${port1}</port>
+        <facility>${facility1}</facility>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="syslog1" />
+    </root>
+
+    <logger name="com.solid.exemplos" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="syslog1" />
+    </logger>
+
+    <logger name="org.springframework" level="ERROR" />
+    <logger name="Tracing" level="OFF" />
+    <logger name="brave" level="OFF" />
+</configuration>

@@ -1,0 +1,239 @@
+/* src/main/resources/static/css/logo-style.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Roboto+Slab:wght@400;700&family=Playfair+Display:wght@700&family=Segoe+UI:wght@400;600;700&display=swap');
+
+/* --- VARIÁVEIS --- */
+:root {
+    --brand-primary: #FFCC00;
+    --brand-hover: #ffdb4d;
+    --text-dark: #1a1a1a;
+    --text-muted: #666;
+    --bg-page: #f4f6f8;
+    --white: #ffffff;
+    --border-color: #e0e0e0;
+    --danger: #dc3545;
+    --success: #28a745;
+}
+
+/* --- BASE --- */
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.page {
+    max-width: 950px;
+    margin: 0 auto;
+    background: var(--white);
+    padding: 50px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+}
+
+/* --- HEADER CENTRALIZADO (Restaurado) --- */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 30px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.logo { height: 70px; width: auto; }
+
+.brand-name {
+    font-family: 'Playfair Display', serif; /* Fonte solicitada */
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.5px;
+}
+
+.titles h2 {
+    font-family: 'Roboto Slab', serif;
+    font-size: 1.8rem;
+    margin: 5px 0;
+    color: #333;
+}
+
+.titles h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Idiomas (Canto Superior Direito) */
+.language-selector {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 8px;
+}
+.flag {
+    width: 26px; cursor: pointer; transition: transform 0.2s; opacity: 0.6;
+    border: 1px solid #ccc; border-radius: 2px;
+}
+.flag:hover, .flag.active { transform: scale(1.1); opacity: 1; border-color: var(--brand-primary); }
+
+/* --- FIELDSETS (Correção das Barras) --- */
+fieldset {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-left: 6px solid var(--brand-primary); /* Barra lateral única */
+    border-radius: 6px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+/* Removemos o legend padrão para evitar conflitos */
+legend { display: none; }
+
+/* Títulos dos Blocos (H3) */
+.card-title {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--text-dark);
+    margin: 0 0 5px 0; /* Bem próximo do subtítulo */
+    padding: 0;
+}
+
+/* Subtítulos dos Blocos */
+.section-subtitle {
+    font-size: 0.9rem;
+    color: #777;
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 20px;
+    display: block;
+    line-height: 1.4;
+}
+
+/* --- TABELA DE ARQUIVOS (Layout Melhorado) --- */
+.file-manager {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.file-header { 
+    display: grid; 
+    /* Ícone | Nome | Páginas Visual | Ação */
+    grid-template-columns: 50px 1fr 200px 60px; 
+    background: #f9f9f9; 
+    padding: 12px 15px; 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    border-bottom: 1px solid #ddd;
+    color: #555;
+    align-items: center;
+}
+
+.file-row { 
+    display: grid; 
+    grid-template-columns: 50px 1fr 200px 60px; 
+    gap: 10px; 
+    padding: 12px 15px; 
+    background: var(--white); 
+    border-bottom: 1px solid #eee; 
+    align-items: center; 
+}
+.file-row:last-child { border-bottom: none; }
+.file-row:hover { background-color: #fafafa; }
+
+/* Inputs dentro da tabela */
+.row-input { 
+    padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%; 
+    font-family: 'Montserrat', sans-serif; font-size: 0.9rem; text-align: center;
+}
+.row-input:focus { border-color: var(--brand-primary); outline: none; }
+
+/* --- VISUALIZADOR --- */
+.visual-config-wrapper { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; margin-top: 20px; }
+.preview-area {
+    background-color: #525659; border-radius: 8px; padding: 20px;
+    display: flex; justify-content: center; align-items: center; min-height: 500px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+}
+canvas { background-color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: default; }
+
+/* --- CONTROLES E ABAS --- */
+.controls-panel { background: #fff; }
+.tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+.tab-btn {
+    flex: 1; padding: 15px; background: none; border: none; border-bottom: 3px solid transparent;
+    font-family: 'Montserrat', sans-serif; font-weight: 600; color: #888; cursor: pointer;
+    text-transform: uppercase; font-size: 0.85rem; transition: 0.3s;
+}
+.tab-btn.active { border-bottom-color: var(--brand-primary); color: var(--text-dark); background: #fffdf5; }
+.tab-content { display: none; animation: fadeIn 0.3s; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Inputs Gerais */
+input[type="text"], input[type="password"], input[type="number"], input[type="file"], select, textarea {
+    width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
+    font-family: 'Montserrat', sans-serif; font-size: 0.9rem;
+    box-sizing: border-box; transition: border-color 0.3s;
+}
+input:focus, select:focus { outline: none; border-color: var(--brand-primary); }
+.static-field { background: #f9f9f9; border: 1px solid #eee; color: #777; font-weight: bold; cursor: not-allowed; }
+
+/* Botões */
+.btn-premium {
+    background: linear-gradient(135deg, #FFCC00 0%, #ffdb4d 100%);
+    color: var(--text-dark); font-family: 'Montserrat', sans-serif; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.5px; padding: 20px; border: none; border-radius: 50px;
+    width: 100%; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 204, 0, 0.3);
+    transition: all 0.3s ease; margin-top: 30px; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1.1rem;
+}
+.btn-premium:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(255, 204, 0, 0.4); }
+
+.btn-text { background: none; border: none; color: #007bff; font-weight: 600; cursor: pointer; padding: 0; font-size: 0.9rem; }
+.btn-text:hover { text-decoration: underline; }
+.btn-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.2rem; display: flex; margin: 0 auto; }
+
+/* Checkbox */
+.checkbox-wrapper {
+    display: flex; align-items: center; gap: 10px; padding: 12px;
+    background: #f8f9fa; border: 1px solid #eee; border-radius: 6px; cursor: pointer; margin-bottom: 15px;
+}
+.checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; margin: 0; accent-color: var(--brand-primary); }
+.conditional-inputs { display: none; }
+.conditional-inputs.visible { display: block; animation: slideDown 0.3s; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Grid e Helpers */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
+.label-strong { font-weight: 600; font-size: 0.9rem; color: #444; margin-bottom: 5px; display: block; }
+.helper-text { font-size: 0.85rem; color: #777; font-style: italic; margin-top: 5px; display: block; }
+#resultBox { margin-top: 30px; border: 2px solid var(--success); padding: 20px; border-radius: 8px; background: #f0fff4; }
+
+/* Mobile */
+@media (max-width: 850px) {
+    .visual-config-wrapper { grid-template-columns: 1fr; }
+    .file-header { display: none; }
+    .file-row { grid-template-columns: 50px 1fr 100px 50px; }
+}
