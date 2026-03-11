@@ -1,4 +1,4 @@
-package com.solid.exemplos.config;
+package com.solidsign.examples.config;
 
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import org.slf4j.Logger;

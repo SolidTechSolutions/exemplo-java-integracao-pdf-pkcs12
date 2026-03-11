@@ -1,4 +1,4 @@
-package com.solid.exemplos.config;
+package com.solidsign.examples.config;
 
 import java.util.HashMap;
 import ch.qos.logback.classic.net.SyslogAppender;

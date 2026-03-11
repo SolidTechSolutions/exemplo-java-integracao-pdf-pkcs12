@@ -35,7 +35,7 @@ Este projeto demonstra a integração com a **SolidSign API** para realizar a as
 1. **Compilar:** `mvn clean install`
 2. **Configurar:** Defina suas credenciais, certificado e caminhos de pastas locais no arquivo `src/main/resources/application.properties`.
 3. **Iniciar:** `mvn spring-boot:run`
-4. **Testar:** Envie um GET para `http://localhost:8080/api/pdf/process-local-folder`. O sistema processará automaticamente todos os PDFs encontrados na pasta de entrada.
+4. **Testar:** Envie um POST para `http://localhost:8080/api/pdf/process-local-folder`. O sistema processará automaticamente todos os PDFs encontrados na pasta de entrada.
 
 ## Tratamento de Erros
 O sistema intercepta erros **400 Bad Request** e loga o JSON detalhado da SolidSign para facilitar o debug de certificados ou parâmetros inválidos.
@@ -77,7 +77,7 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 1. **Build:** `mvn clean install`
 2. **Configure:** Set your credentials, certificate, and local folder paths in the `src/main/resources/application.properties` file.
 3. **Start:** `mvn spring-boot:run`
-4. **Test:** Send a GET request to `http://localhost:8080/api/pdf/process-local-folder`. The application will scan your input folder and process all PDFs automatically.
+4. **Test:** Send a POST request to `http://localhost:8080/api/pdf/process-local-folder`. The application will scan your input folder and process all PDFs automatically.
 
 ## Error Handling
 The system intercepts **400 Bad Request** errors and logs the detailed JSON response from SolidSign to assist in debugging invalid certificates or parameters.
@@ -119,7 +119,7 @@ Este proyecto demuestra la integración con la **SolidSign API** para realizar l
 1. **Compilar:** `mvn clean install`
 2. **Configurar:** Defina sus credenciales, certificado y rutas de carpetas locales en el archivo `src/main/resources/application.properties`.
 3. **Iniciar:** `mvn spring-boot:run`
-4. **Probar:** Envíe una solicitud GET a `http://localhost:8080/api/pdf/process-local-folder`. La aplicación escaneará su carpeta de entrada y procesará todos los PDF automáticamente.
+4. **Probar:** Envíe una solicitud POST a `http://localhost:8080/api/pdf/process-local-folder`. La aplicación escaneará su carpeta de entrada y procesará todos los PDF automáticamente.
 
 ## Gestión de Errores
 El sistema intercepta errores **400 Bad Request** y registra el JSON detallado de SolidSign para facilitar la depuración de certificados o parámetros inválidos.

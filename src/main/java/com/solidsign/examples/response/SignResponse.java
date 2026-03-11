@@ -1,4 +1,4 @@
-package com.solid.exemplos.response;
+package com.solidsign.examples.response;
 
 import java.util.List;
 

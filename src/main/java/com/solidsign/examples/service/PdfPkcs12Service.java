@@ -1,6 +1,5 @@
-package com.solid.exemplos.service;
+package com.solidsign.examples.service;
 
-import com.solid.exemplos.response.SignResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +10,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
+import com.solidsign.examples.response.SignResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +47,7 @@ public class PdfPkcs12Service {
     @Value("${solidsign.sig.field-config}")
     private String signatureFieldConfig;
 
-    public String processLocalFiles(List<File> pdfFiles, File p12Cert, String p12Pass, String outputDir) throws IOException {
+    public String signPkcs12WithApi(List<File> pdfFiles, File p12Cert, String p12Pass, String outputDir) throws IOException {
         
         LOGGER.info("Starting batch processing for {} local files", pdfFiles.size());
 

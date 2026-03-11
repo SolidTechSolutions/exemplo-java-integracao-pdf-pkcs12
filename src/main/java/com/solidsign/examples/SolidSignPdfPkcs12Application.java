@@ -1,4 +1,4 @@
-package com.solid.exemplos;
+package com.solidsign.examples;
 
 import java.util.Locale;
 

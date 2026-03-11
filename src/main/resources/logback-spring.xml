@@ -16,7 +16,7 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="com.solid.exemplos.config.CustomRollingFileAppender">
+    <appender name="FILE" class="com.solid.examples.config.CustomRollingFileAppender">
         <file>${LOG_PATH}/${LOG_FILE}.log</file>
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <charset>UTF-8</charset>
@@ -35,7 +35,7 @@
     <springProperty scope="context" name="port1" source="logging.graylog.servidores[0].port" />
     <springProperty scope="context" name="facility1" source="logging.graylog.servidores[0].facility" />
     
-    <appender name="syslog1" class="com.solid.exemplos.config.CustomSyslogLogbackAppender">
+    <appender name="syslog1" class="com.solid.examples.config.CustomSyslogLogbackAppender">
         <syslogHost>${host1}</syslogHost>
         <port>${port1}</port>
         <facility>${facility1}</facility>
@@ -47,7 +47,7 @@
         <appender-ref ref="syslog1" />
     </root>
 
-    <logger name="com.solid.exemplos" additivity="false" level="INFO">
+    <logger name="com.solid.examples" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
         <appender-ref ref="syslog1" />
