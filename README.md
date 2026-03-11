@@ -14,7 +14,7 @@ Este projeto demonstra a integração com a **SolidSign API** para realizar a as
 | `solidsign.api.url` | Endpoint da SolidSign API para assinatura PKCS12. | `https://solidsign.com.br/solidsign/dsig/pdf/sign-pkcs12` |
 | `solidsign.api.token` | Token JWT de autorização (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
 | `solidsign.cert.path` | Caminho absoluto do arquivo `.pfx` ou `.p12`. | `C:/certificados/meu_cert.pfx` |
-| `solidsign.cert.password-base64` | Senha do certificado em texto simples ou Base64. | `MTIzNDU2....` |
+| `solidsign.cert.password-base64` | Senha do certificado em Base64. | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Lista de caminhos para as imagens de carimbo. | `C:/img/stamp1.png, C:/img/stamp2.png` |
 | `solidsign.sig.field-config` | JSON com coordenadas e dimensões da assinatura. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
 | `solidsign.sig.profile` | Perfil/Padrão da assinatura (Adobe International/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `PDF_TIMESTAMP`, `PDF_COMPLETE`, `ADRB`, `ADRT`, `ADRC`, `ADRA`, `PADES_B`, `PADES_T`, `PADES_LT`, `PADES_LTA` |
@@ -54,7 +54,7 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 | `solidsign.api.url` | SolidSign API endpoint for PKCS12 signing. | `https://solidsign.com.br/.../sign-pkcs12` |
 | `solidsign.api.token` | Authorization JWT Token (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
 | `solidsign.cert.path` | Absolute path to the `.pfx` or `.p12` file. | `C:/certificates/my_cert.pfx` |
-| `solidsign.cert.password-base64` | Certificate password (Plain text or Base64). | `MTIzNDU2....` |
+| `solidsign.cert.password-base64` | Certificate password in Base64 format. | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Comma-separated list of image stamp paths. | `C:/img/stamp1.png, C:/img/stamp2.png` |
 | `solidsign.sig.field-config` | JSON with signature coordinates and dimensions. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
 | `solidsign.sig.profile` | Signature Profile/Standard (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
@@ -96,7 +96,7 @@ Este proyecto demuestra la integración con la **SolidSign API** para realizar l
 | `solidsign.api.url` | Endpoint de la SolidSign API para firma PKCS12. | `https://solidsign.com.br/.../sign-pkcs12` |
 | `solidsign.api.token` | Token JWT de autorización (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
 | `solidsign.cert.path` | Ruta absoluta del archivo `.pfx` o `.p12`. | `C:/certificados/mi_cert.pfx` |
-| `solidsign.cert.password-base64` | Contraseña del certificado (Texto plano o Base64). | `MTIzNDU2....` |
+| `solidsign.cert.password-base64` | Contraseña del certificado en formato Base64. | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Lista de rutas para las imágenes del sello. | `C:/img/sello1.png, C:/img/sello2.png` |
 | `solidsign.sig.field-config` | JSON con coordenadas y dimensiones de la firma. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
 | `solidsign.sig.profile` | Perfil/Estándar de firma (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
