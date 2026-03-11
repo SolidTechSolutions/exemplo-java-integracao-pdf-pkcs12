@@ -4,7 +4,6 @@ import com.solid.exemplos.response.SignResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -12,10 +11,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -25,7 +23,6 @@ import java.util.zip.ZipOutputStream;
 public class PdfPkcs12Service {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(PdfPkcs12Service.class);
-
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${solidsign.api.token}")
@@ -49,9 +46,9 @@ public class PdfPkcs12Service {
     @Value("${solidsign.sig.field-config}")
     private String signatureFieldConfig;
 
-    public byte[] signMultiplePdfsAndBundle(List<MultipartFile> originalFiles, File p12Cert, String p12Pass) throws IOException {
+    public String processLocalFiles(List<File> pdfFiles, File p12Cert, String p12Pass, String outputDir) throws IOException {
         
-        LOGGER.info("Starting signature process for {} file(s)", originalFiles.size());
+        LOGGER.info("Starting batch processing for {} local files", pdfFiles.size());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -59,15 +56,12 @@ public class PdfPkcs12Service {
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
-        // 1. Adding Documents
-        for (int i = 0; i < originalFiles.size(); i++) {
-            final int index = i;
-            body.add("document[" + i + "]", new ByteArrayResource(originalFiles.get(i).getBytes()) {
-                @Override public String getFilename() { return originalFiles.get(index).getOriginalFilename(); }
-            });
+        // 1. Adding Documents from local path
+        for (int i = 0; i < pdfFiles.size(); i++) {
+            body.add("document[" + i + "]", new FileSystemResource(pdfFiles.get(i)));
         }
 
-        // 2. Adding Images
+        // 2. Adding Signature Images
         if (signatureImagePaths != null) {
             for (int i = 0; i < signatureImagePaths.size(); i++) {
                 File imgFile = new File(signatureImagePaths.get(i).trim());
@@ -87,27 +81,30 @@ public class PdfPkcs12Service {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
         
         try {
-            LOGGER.info("Sending request to SolidSign API: {}", apiUrl);
             ResponseEntity<SignResponse> response = restTemplate.postForEntity(apiUrl, request, SignResponse.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                LOGGER.info("Signature request successful. Identifier: {}", response.getBody().identifier);
-                return downloadAndZipFiles(response.getBody(), originalFiles);
+                byte[] zipContent = downloadAndZipFiles(response.getBody(), pdfFiles);
+                
+                File outDir = new File(outputDir);
+                if (!outDir.exists()) outDir.mkdirs();
+                
+                String outputFileName = outputDir + "/signed_batch_" + System.currentTimeMillis() + ".zip";
+                try (FileOutputStream fos = new FileOutputStream(outputFileName)) {
+                    fos.write(zipContent);
+                }
+                return outputFileName;
             }
         } catch (HttpStatusCodeException e) {
-            // LOGGING THE ERROR JSON (400, 401, 500, etc.)
-            LOGGER.error("API Error - Status Code: {} | Response Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            LOGGER.error("SolidSign API Error: {} | Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
         } catch (Exception e) {
-            LOGGER.error("Unexpected error during signature request: {}", e.getMessage());
+            LOGGER.error("Unexpected error: {}", e.getMessage());
         }
-        
         return null;
     }
 
-    private byte[] downloadAndZipFiles(SignResponse signResponse, List<MultipartFile> originalFiles) throws IOException {
-        LOGGER.info("Downloading signed documents and bundling into ZIP");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        
+    private byte[] downloadAndZipFiles(SignResponse signResponse, List<File> originalFiles) throws IOException {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", authorization);
@@ -115,28 +112,18 @@ public class PdfPkcs12Service {
 
             for (int i = 0; i < signResponse.documents.size(); i++) {
                 String downloadUrl = signResponse.documents.get(i).links.stream()
-                        .filter(l -> "self".equals(l.rel))
-                        .findFirst()
-                        .map(l -> l.href)
-                        .orElse(null);
+                        .filter(l -> "self".equals(l.rel)).findFirst().map(l -> l.href).orElse(null);
 
                 if (downloadUrl != null) {
-                    try {
-                        ResponseEntity<byte[]> pdfResponse = restTemplate.exchange(downloadUrl, HttpMethod.GET, entity, byte[].class);
-                        if (pdfResponse.getStatusCode() == HttpStatus.OK) {
-                            String fileName = "signed_" + originalFiles.get(i).getOriginalFilename();
-                            zos.putNextEntry(new ZipEntry(fileName));
-                            zos.write(pdfResponse.getBody());
-                            zos.closeEntry();
-                            LOGGER.debug("File added to ZIP: {}", fileName);
-                        }
-                    } catch (HttpStatusCodeException e) {
-                        LOGGER.error("Error downloading signed file from {}: {}", downloadUrl, e.getResponseBodyAsString());
+                    ResponseEntity<byte[]> pdfResponse = restTemplate.exchange(downloadUrl, HttpMethod.GET, entity, byte[].class);
+                    if (pdfResponse.getStatusCode() == HttpStatus.OK) {
+                        zos.putNextEntry(new ZipEntry("signed_" + originalFiles.get(i).getName()));
+                        zos.write(pdfResponse.getBody());
+                        zos.closeEntry();
                     }
                 }
             }
         }
-        LOGGER.info("ZIP bundle created successfully");
         return baos.toByteArray();
     }
 }

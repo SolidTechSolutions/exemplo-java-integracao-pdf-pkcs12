@@ -1,23 +1,19 @@
 package com.solid.exemplos.control;
 
-import com.solid.exemplos.SolidSignPdfPkcs12Application;
 import com.solid.exemplos.service.PdfPkcs12Service;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pdf")
@@ -33,32 +29,41 @@ public class PdfPkcs12Controller {
 
     @Value("${solidsign.cert.password-base64}")
     private String certPassword;
-    
-    @PostMapping(value = "/sign-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<byte[]> signDocuments(@RequestParam("files") MultipartFile[] files) throws IOException {
-        
-        LOGGER.info("Received request to sign {} files", files != null ? files.length : 0);
 
-        if (files == null || files.length == 0) {
-            LOGGER.warn("Request failed: No files provided");
-            return ResponseEntity.badRequest().build();
+    @Value("${solidsign.batch.input-path}")
+    private String inputPath;
+
+    @Value("${solidsign.batch.output-path}")
+    private String outputPath;
+
+    @GetMapping("/sign-pkcs12")
+    public ResponseEntity<String> processFolder() throws IOException {
+        
+        File folder = new File(inputPath);
+        if (!folder.exists() || !folder.isDirectory()) {
+            return ResponseEntity.badRequest().body("Invalid input path: " + inputPath);
         }
 
-        byte[] zipResult = solidSignService.signMultiplePdfsAndBundle(
-                Arrays.asList(files), 
+        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
+        
+        if (files == null || files.length == 0) {
+            return ResponseEntity.ok("No PDF files found in " + inputPath);
+        }
+
+        List<File> pdfList = Arrays.asList(files);
+        LOGGER.info("Found {} files for local processing.", pdfList.size());
+
+        String resultPath = solidSignService.processLocalFiles(
+                pdfList, 
                 new File(certPath), 
-                certPassword
+                certPassword, 
+                outputPath
         );
 
-        if (zipResult == null) {
-            LOGGER.error("Signature process failed. Check service logs for API error details.");
-            return ResponseEntity.internalServerError().build();
+        if (resultPath != null) {
+            return ResponseEntity.ok("Processing completed! ZIP generated at: " + resultPath);
+        } else {
+            return ResponseEntity.internalServerError().body("Processing failed. Check logs.");
         }
-
-        LOGGER.info("Signature process completed successfully. Returning ZIP file.");
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .header("Content-Disposition", "attachment; filename=\"all_signed_docs.zip\"")
-                .body(zipResult);
     }
 }
