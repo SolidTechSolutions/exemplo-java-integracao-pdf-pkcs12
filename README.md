@@ -11,13 +11,13 @@ Este projeto demonstra a integração com a **SolidSign API** para realizar a as
 
 | Atributo | Descrição | Exemplo / Valor |
 | :--- | :--- | :--- |
-| `solidsign.api.url` | Endpoint da API para assinatura PKCS12. | `https://solidsign.com.br/.../sign-pkcs12` |
+| `solidsign.api.url` | Endpoint da SolidSign API para assinatura PKCS12. | `https://solidsign.com.br/solidsign/dsig/pdf/sign-pkcs12` |
 | `solidsign.api.token` | Token JWT de autorização (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
 | `solidsign.cert.path` | Caminho absoluto do arquivo `.pfx` ou `.p12`. | `C:/certificados/meu_cert.pfx` |
 | `solidsign.cert.password-base64` | Senha do certificado em texto simples ou Base64. | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Lista de caminhos para as imagens de carimbo. | `C:/img/stamp1.png, C:/img/stamp2.png` |
 | `solidsign.sig.field-config` | JSON com coordenadas e dimensões da assinatura. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Perfil/Padrão da assinatura (Adobe/PAdES ETSI/ ICP-Brasil). | `ADRB`, `PADES_B`, `PDF_BASIC`, `ADRT`, etc. |
+| `solidsign.sig.profile` | Perfil/Padrão da assinatura (Adobe International/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `PDF_TIMESTAMP`, `PDF_COMPLETE`, `ADRB`, `ADRT`, `ADRC`, `ADRA`, `PADES_B`, `PADES_T`, `PADES_LT`, `PADES_LTA` |
 | `solidsign.sig.unit` | Unidade de medida para os campos. | `PIXELS` ou `MILLIMETERS` |
 
 ## Stack
@@ -31,7 +31,7 @@ Este projeto demonstra a integração com a **SolidSign API** para realizar a as
 1. **Compilar:** `mvn clean install`
 2. **Configurar:** Defina suas credenciais, certificado e caminhos de imagem no arquivo `src/main/resources/application.properties`.
 3. **Iniciar:** `mvn spring-boot:run`
-4. **Testar:** Envie um POST para `http://localhost:8080/api/pdf/sign-multiple` com o campo `files`.
+4. **Testar:** Envie um POST para `http://localhost:8080/api/pdf/sign-pkcs12`. Suas configurações definidas em `application.properties` serão aplicadas na requisição.
 
 ## Tratamento de Erros
 O sistema intercepta erros **400 Bad Request** e loga o JSON detalhado da SolidSign para facilitar o debug de certificados ou parâmetros inválidos.
@@ -44,8 +44,8 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 
 ## Project Structure
 
-* **Controller:** Handles Multipart file uploads and manages the ZIP response.
-* **Service:** Orchestrates the API calls, handles 400/500 errors, and downloads signed files.
+* **Controller:** Acts as a trigger to scan the local input folder and manage the process.
+* **Service:** Orchestrates the API calls, handles 400/500 errors, and downloads signed files from the local storage.
 
 ## Configuration (application.properties)
 
@@ -57,8 +57,10 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 | `solidsign.cert.password-base64` | Certificate password (Plain text or Base64). | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Comma-separated list of image stamp paths. | `C:/img/stamp1.png, C:/img/stamp2.png` |
 | `solidsign.sig.field-config` | JSON with signature coordinates and dimensions. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Signature Profile/Standard (Adobe/PAdES ETSI/ ICP-Brasil). | `ADRB`, `PADES_B`, `PDF_BASIC`, `ADRT`, etc. |
+| `solidsign.sig.profile` | Signature Profile/Standard (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
 | `solidsign.sig.unit` | Measurement unit for signature fields. | `PIXELS` or `MILLIMETERS` |
+| `solidsign.batch.input-path` | Local folder where original PDFs are stored. | `C:/Users/User/Desktop/input_pdfs` |
+| `solidsign.batch.output-path` | Local folder where the resulting ZIP will be saved. | `C:/Users/User/Desktop/signed_results` |
 
 ## Stack
 1. Java 17
@@ -69,9 +71,9 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 ## How to Run
 
 1. **Build:** `mvn clean install`
-2. **Configure:** Set your credentials, certificate, and image settings in `src/main/resources/application.properties` file.
+2. **Configure:** Set your credentials, certificate, and local paths in the `src/main/resources/application.properties` file.
 3. **Start:** `mvn spring-boot:run`
-4. **Test:** Send a POST request to `http://localhost:8080/api/pdf/sign-multiple` using the `files` field.
+4. **Test:** Send a GET request to `http://localhost:8080/api/pdf/process-local-folder`. The application will scan your input folder and process all PDFs automatically.
 
 ## Error Handling
 The system intercepts **400 Bad Request** errors and logs the detailed JSON response from SolidSign to assist in debugging invalid certificates or parameters.
@@ -84,21 +86,23 @@ Este proyecto demuestra la integración con la **SolidSign API** para realizar l
 
 ## Estructura del Proyecto
 
-* **Controller:** Recibe los archivos vía Multipart y gestiona la respuesta en formato ZIP.
-* **Service:** Orquestra la llamada a la API, gestiona errores 400/500 y descarga los archivos firmados.
+* **Controller:** Actúa como disparador para escanear la carpeta local y gestionar el proceso.
+* **Service:** Orquestra las llamadas a la API, gestiona errores 400/500 y descarga los archivos firmados desde el almacenamiento local.
 
 ## Configuración (application.properties)
 
 | Atributo | Descripción | Ejemplo / Valor |
 | :--- | :--- | :--- |
-| `solidsign.api.url` | Endpoint de la API para firma PKCS12. | `https://solidsign.com.br/.../sign-pkcs12` |
+| `solidsign.api.url` | Endpoint de la SolidSign API para firma PKCS12. | `https://solidsign.com.br/.../sign-pkcs12` |
 | `solidsign.api.token` | Token JWT de autorización (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
 | `solidsign.cert.path` | Ruta absoluta del archivo `.pfx` o `.p12`. | `C:/certificados/mi_cert.pfx` |
 | `solidsign.cert.password-base64` | Contraseña del certificado (Texto plano o Base64). | `MTIzNDU2....` |
 | `solidsign.sig.image-paths` | Lista de rutas para las imágenes del sello. | `C:/img/sello1.png, C:/img/sello2.png` |
 | `solidsign.sig.field-config` | JSON con coordenadas y dimensiones de la firma. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Perfil/Estándar de firma (Adobe/PAdES ETSI/ ICP-Brasil). | `ADRB`, `PADES_B`, `PDF_BASIC`, `ADRT`, etc. |
+| `solidsign.sig.profile` | Perfil/Estándar de firma (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
 | `solidsign.sig.unit` | Unidad de medida para los campos de firma. | `PIXELS` o `MILLIMETERS` |
+| `solidsign.batch.input-path` | Carpeta local donde se guardan los PDF originales. | `C:/Users/User/Desktop/input_pdfs` |
+| `solidsign.batch.output-path` | Carpeta local donde se guardará el ZIP resultante. | `C:/Users/User/Desktop/signed_results` |
 
 ## Stack
 1. Java 17
@@ -109,9 +113,9 @@ Este proyecto demuestra la integración con la **SolidSign API** para realizar l
 ## Cómo Ejecutar
 
 1. **Compilar:** `mvn clean install`
-2. **Configurar:** Defina sus credenciales, certificado y rutas de imagen en el archivo `src/main/resources/application.properties`.
+2. **Configurar:** Defina sus credenciales, certificado y rutas locales en el archivo `src/main/resources/application.properties`.
 3. **Iniciar:** `mvn spring-boot:run`
-4. **Probar:** Envíe un POST a `http://localhost:8080/api/pdf/sign-multiple` con el campo `files`.
+4. **Probar:** Envíe una solicitud GET a `http://localhost:8080/api/pdf/process-local-folder`. La aplicación escaneará su carpeta de entrada y procesará todos los PDF automáticamente.
 
 ## Gestión de Errores
 El sistema intercepta errores **400 Bad Request** y registra el JSON detallado de SolidSign para facilitar la depuración de certificados o parámetros inválidos.
