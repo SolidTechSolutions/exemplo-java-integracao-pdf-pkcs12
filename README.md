@@ -1,28 +1,34 @@
 # 🇧🇷 SolidSign API - Exemplo de Assinatura PDF PKCS12 (Batch Mode)
 
-Este projeto demonstra a integração com a **SolidSign API** para realizar a assinatura digital de múltiplos documentos PDF em uma única operação, utilizando certificados no formato PFX/PKCS12 e processamento de imagens (carimbos).
-
-
+Este projeto demonstra a integração com a **SolidSign API** para realizar a assinatura digital PAdES de múltiplos documentos PDF em lote, utilizando um certificado PKCS#12 pré-importado e suporte a campo de assinatura visual com imagem de carimbo.
 
 ## Estrutura do Projeto
 
-* **Controller:** Atua como gatilho para escanear a pasta de entrada local e gerenciar o processo.
-* **Service:** Orquestra a chamada para a API, trata erros 400/500 e realiza o download dos arquivos assinados para o armazenamento local.
+* **Controller:** Atua como gatilho para escanear a pasta de entrada local e gerenciar o processo de assinatura PAdES.
+* **Service:** Orquestra a chamada para a API SolidSign, trata erros 400/500 e salva o arquivo ZIP com os PDFs assinados no armazenamento local.
 
 ## Configuração (application.properties)
 
 | Atributo | Descrição | Exemplo / Valor |
 | :--- | :--- | :--- |
-| `solidsign.api.url` | Endpoint da SolidSign API para assinatura PKCS12. | `https://solidsign.com.br/solidsign/dsig/pdf/sign-pkcs12` |
-| `solidsign.api.token` | Token JWT de autorização (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
-| `solidsign.cert.path` | Caminho absoluto do arquivo `.pfx` ou `.p12`. | `C:/certificados/meu_cert.pfx` |
-| `solidsign.cert.password-base64` | Senha do certificado em Base64. | `MTIzNDU2....` |
+| `solidsign.api.base-url` | URL base da SolidSign API (sem o caminho). | `https://solidsign.com.br` |
+| `solidsign.api.authorization` | Token JWT de autorização (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
+| `solidsign.cert.id` | UUID do certificado PKCS#12 pré-importado via `POST /solidsign/dsig/certificates/pkcs12/import`. | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `solidsign.batch.input-path` | Pasta local contendo os PDFs originais para assinatura. | `C:/Users/User/Desktop/input_pdfs` |
-| `solidsign.batch.output-path` | Pasta onde o arquivo .zip com os PDFs assinados será salvo. | `C:/Users/User/Desktop/signed_results` |
-| `solidsign.sig.image-paths` | Lista de caminhos para as imagens de carimbo. | `C:/img/stamp1.png, C:/img/stamp2.png` |
-| `solidsign.sig.field-config` | JSON com coordenadas e dimensões da assinatura. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Perfil/Padrão da assinatura (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
-| `solidsign.sig.unit` | Unidade de medida para os campos. | `PIXELS` ou `MILLIMETERS` |
+| `solidsign.batch.output-path` | Pasta onde o arquivo ZIP com os PDFs assinados será salvo. | `C:/Users/User/Desktop/signed_results` |
+| `solidsign.sig.hashAlgorithm` | Algoritmo de hash criptográfico (SHA256, SHA384, SHA512). | `SHA256` |
+| `solidsign.sig.profile` | Perfil/padrão da assinatura PAdES (Adobe/ICP-Brasil/ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
+| `solidsign.sig.sigFieldMeasurementUnit` | Unidade de medida para as coordenadas do campo de assinatura. | `PIXELS` ou `MILLIMETERS` |
+| `solidsign.sig.signatureFieldConfig` | JSON com coordenadas e dimensões do campo de assinatura visual. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":380,"width":200,"height":80}]` |
+| `solidsign.sig.signatureImagePaths` | Caminho(s) para a(s) imagem(ns) de carimbo de assinatura. | `C:/img/stamp.png` |
+| `solidsign.sig.reason` | Motivo da assinatura (visível no painel de assinaturas do PDF). | `Assinatura digital` |
+| `solidsign.sig.location` | Local geográfico onde o documento foi assinado. | `Brasil` |
+| `solidsign.sig.contact` | Informações de contato do assinante. | `contato@empresa.com.br` |
+| `solidsign.sig.signatureFieldName` *(opcional)* | Nome de um campo de assinatura pré-existente no PDF. | `SignatureField1` |
+| `solidsign.sig.signatureTextConfig` *(opcional)* | JSON com texto personalizado exibido no campo de assinatura visual. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":460,"text":"Assinado","fontSize":10,"textColor":"BLACK"}]` |
+| `solidsign.sig.mdpPermissionLevel` *(opcional)* | Nível MDP para assinaturas de certificação (1=sem alterações, 2=formulários, 3=anotações). | `1` |
+| `solidsign.sig.passwordsForDecryption` *(opcional)* | Array JSON de senhas para abrir PDFs criptografados. | `["senha1"]` |
+| `solidsign.sig.policyVersion` *(opcional)* | OID da política de assinatura ICP-Brasil. | `2.16.76.1.7.1.11.1.3` |
 
 ## Stack
 1. Java 17
@@ -32,10 +38,11 @@ Este projeto demonstra a integração com a **SolidSign API** para realizar a as
 
 ## Como Executar
 
-1. **Compilar:** `mvn clean install`
-2. **Configurar:** Defina suas credenciais, certificado e caminhos de pastas locais no arquivo `src/main/resources/application.properties`.
-3. **Iniciar:** `mvn spring-boot:run`
-4. **Testar:** Envie um POST para `http://localhost:8080/api/pdf/process-local-folder`. O sistema processará automaticamente todos os PDFs encontrados na pasta de entrada.
+1. **Importar certificado:** Envie o arquivo `.pfx` e a senha (Base64) via `POST /solidsign/dsig/certificates/pkcs12/import` na SolidSign API e anote o `certId` retornado.
+2. **Configurar:** Defina `solidsign.cert.id` com o UUID obtido e configure os demais parâmetros em `src/main/resources/application.properties`.
+3. **Compilar:** `mvn clean install`
+4. **Iniciar:** `mvn spring-boot:run`
+5. **Testar:** Envie um POST para `http://localhost:8080/api/pdf/sign-pkcs12`. O sistema processará automaticamente todos os PDFs encontrados na pasta de entrada.
 
 ## Tratamento de Erros
 O sistema intercepta erros **400 Bad Request** e loga o JSON detalhado da SolidSign para facilitar o debug de certificados ou parâmetros inválidos.
@@ -44,27 +51,35 @@ O sistema intercepta erros **400 Bad Request** e loga o JSON detalhado da SolidS
 
 # 🇬🇧 SolidSign API - PDF PKCS12 Signature Example (Batch Mode)
 
-This project demonstrates the integration with the **SolidSign API** to perform digital signatures on multiple PDF documents in a single operation, using PFX/PKCS12 certificates and image stamp processing.
+This project demonstrates the integration with the **SolidSign API** to perform PAdES digital signatures on multiple PDF documents in batch mode, using a pre-imported PKCS#12 certificate and support for visual signature fields with image stamps.
 
 ## Project Structure
 
-* **Controller:** Acts as a trigger to scan the local input folder and manage the process.
-* **Service:** Orchestrates the API calls, handles 400/500 errors, and downloads signed files to the local storage.
+* **Controller:** Acts as a trigger to scan the local input folder and manage the PAdES signing process.
+* **Service:** Orchestrates the SolidSign API calls, handles 400/500 errors, and saves the ZIP file with signed PDFs to local storage.
 
 ## Configuration (application.properties)
 
 | Attribute | Description | Example / Value |
 | :--- | :--- | :--- |
-| `solidsign.api.url` | SolidSign API endpoint for PKCS12 signing. | `https://solidsign.com.br/.../sign-pkcs12` |
-| `solidsign.api.token` | Authorization JWT Token (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
-| `solidsign.cert.path` | Absolute path to the `.pfx` or `.p12` file. | `C:/certificates/my_cert.pfx` |
-| `solidsign.cert.password-base64` | Certificate password in Base64 format. | `MTIzNDU2....` |
-| `solidsign.batch.input-path` | Local folder where original PDFs are stored for signing. | `C:/Users/User/Desktop/input_pdfs` |
-| `solidsign.batch.output-path` | Local folder where the resulting ZIP file will be saved. | `C:/Users/User/Desktop/signed_results` |
-| `solidsign.sig.image-paths` | Comma-separated list of image stamp paths. | `C:/img/stamp1.png, C:/img/stamp2.png` |
-| `solidsign.sig.field-config` | JSON with signature coordinates and dimensions. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Signature Profile/Standard (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
-| `solidsign.sig.unit` | Measurement unit for signature fields. | `PIXELS` or `MILLIMETERS` |
+| `solidsign.api.base-url` | Base URL of the SolidSign API (without path). | `https://solidsign.com.br` |
+| `solidsign.api.authorization` | Authorization JWT Token (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
+| `solidsign.cert.id` | UUID of the PKCS#12 certificate previously imported via `POST /solidsign/dsig/certificates/pkcs12/import`. | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `solidsign.batch.input-path` | Local folder containing the original PDFs for signing. | `C:/Users/User/Desktop/input_pdfs` |
+| `solidsign.batch.output-path` | Local folder where the signed ZIP file will be saved. | `C:/Users/User/Desktop/signed_results` |
+| `solidsign.sig.hashAlgorithm` | Cryptographic hash algorithm (SHA256, SHA384, SHA512). | `SHA256` |
+| `solidsign.sig.profile` | PAdES signature profile/standard (Adobe/ICP-Brasil/ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
+| `solidsign.sig.sigFieldMeasurementUnit` | Measurement unit for signature field coordinates. | `PIXELS` or `MILLIMETERS` |
+| `solidsign.sig.signatureFieldConfig` | JSON with visual signature field coordinates and dimensions. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":380,"width":200,"height":80}]` |
+| `solidsign.sig.signatureImagePaths` | Path(s) to the signature stamp image(s). | `C:/img/stamp.png` |
+| `solidsign.sig.reason` | Reason for the signature (visible in the PDF signature panel). | `Digital signature` |
+| `solidsign.sig.location` | Geographic location where the document was signed. | `Brazil` |
+| `solidsign.sig.contact` | Signer contact information. | `contact@company.com` |
+| `solidsign.sig.signatureFieldName` *(optional)* | Name of a pre-existing signature field in the PDF. | `SignatureField1` |
+| `solidsign.sig.signatureTextConfig` *(optional)* | JSON with custom text displayed in the visual signature field. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":460,"text":"Signed","fontSize":10,"textColor":"BLACK"}]` |
+| `solidsign.sig.mdpPermissionLevel` *(optional)* | MDP level for certification signatures (1=no changes, 2=forms, 3=annotations). | `1` |
+| `solidsign.sig.passwordsForDecryption` *(optional)* | JSON array of passwords to open encrypted PDFs. | `["password1"]` |
+| `solidsign.sig.policyVersion` *(optional)* | ICP-Brasil signature policy OID. | `2.16.76.1.7.1.11.1.3` |
 
 ## Stack
 1. Java 17
@@ -74,10 +89,11 @@ This project demonstrates the integration with the **SolidSign API** to perform 
 
 ## How to Run
 
-1. **Build:** `mvn clean install`
-2. **Configure:** Set your credentials, certificate, and local folder paths in the `src/main/resources/application.properties` file.
-3. **Start:** `mvn spring-boot:run`
-4. **Test:** Send a POST request to `http://localhost:8080/api/pdf/process-local-folder`. The application will scan your input folder and process all PDFs automatically.
+1. **Import certificate:** Upload the `.pfx` file and password (Base64) via `POST /solidsign/dsig/certificates/pkcs12/import` and note the returned `certId`.
+2. **Configure:** Set `solidsign.cert.id` with the obtained UUID and configure the remaining parameters in `src/main/resources/application.properties`.
+3. **Build:** `mvn clean install`
+4. **Start:** `mvn spring-boot:run`
+5. **Test:** Send a POST request to `http://localhost:8080/api/pdf/sign-pkcs12`. The application will automatically process all PDFs found in the input folder.
 
 ## Error Handling
 The system intercepts **400 Bad Request** errors and logs the detailed JSON response from SolidSign to assist in debugging invalid certificates or parameters.
@@ -86,27 +102,35 @@ The system intercepts **400 Bad Request** errors and logs the detailed JSON resp
 
 # 🇪🇸 SolidSign API - Ejemplo de Firma PDF PKCS12 (Modo Batch)
 
-Este proyecto demuestra la integración con la **SolidSign API** para realizar la firma digital de múltiples documentos PDF en una sola operación, utilizando certificados en formato PFX/PKCS12 y procesamiento de imágenes (sellos).
+Este proyecto demuestra la integración con la **SolidSign API** para realizar la firma digital PAdES de múltiples documentos PDF en lote, usando un certificado PKCS#12 pre-importado y soporte para campos de firma visual con imagen de sello.
 
 ## Estructura del Proyecto
 
-* **Controller:** Actúa como disparador para escanear la carpeta local de entrada y gestionar el proceso.
-* **Service:** Orquestra las llamadas a la API, gestiona errores 400/500 y descarga los archivos firmados en el almacenamiento local.
+* **Controller:** Actúa como disparador para escanear la carpeta local de entrada y gestionar el proceso de firma PAdES.
+* **Service:** Orquestra las llamadas a la API SolidSign, gestiona errores 400/500 y guarda el archivo ZIP con los PDFs firmados en el almacenamiento local.
 
 ## Configuración (application.properties)
 
 | Atributo | Descripción | Ejemplo / Valor |
 | :--- | :--- | :--- |
-| `solidsign.api.url` | Endpoint de la SolidSign API para firma PKCS12. | `https://solidsign.com.br/.../sign-pkcs12` |
-| `solidsign.api.token` | Token JWT de autorización (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
-| `solidsign.cert.path` | Ruta absoluta del archivo `.pfx` o `.p12`. | `C:/certificados/mi_cert.pfx` |
-| `solidsign.cert.password-base64` | Contraseña del certificado en formato Base64. | `MTIzNDU2....` |
+| `solidsign.api.base-url` | URL base de la SolidSign API (sin la ruta). | `https://solidsign.com.br` |
+| `solidsign.api.authorization` | Token JWT de autorización (Bearer). | `Bearer eyJhbGciOiJIUzI1...` |
+| `solidsign.cert.id` | UUID del certificado PKCS#12 pre-importado mediante `POST /solidsign/dsig/certificates/pkcs12/import`. | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `solidsign.batch.input-path` | Carpeta local que contiene los PDF originales para firmar. | `C:/Users/User/Desktop/input_pdfs` |
-| `solidsign.batch.output-path` | Carpeta local donde se guardará el archivo ZIP resultante. | `C:/Users/User/Desktop/signed_results` |
-| `solidsign.sig.image-paths` | Lista de rutas para las imágenes del sello. | `C:/img/sello1.png, C:/img/sello2.png` |
-| `solidsign.sig.field-config` | JSON con coordenadas y dimensiones de la firma. | `[{ "coordinateX": 30, "coordinateY": 30, "page": "FIRST_PAGE", "width": 60, "height": 150 }]` |
-| `solidsign.sig.profile` | Perfil/Estándar de firma (Adobe/ICP-Brasil/PAdES ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
-| `solidsign.sig.unit` | Unidad de medida para los campos de firma. | `PIXELS` o `MILLIMETERS` |
+| `solidsign.batch.output-path` | Carpeta local donde se guardará el archivo ZIP firmado. | `C:/Users/User/Desktop/signed_results` |
+| `solidsign.sig.hashAlgorithm` | Algoritmo de hash criptográfico (SHA256, SHA384, SHA512). | `SHA256` |
+| `solidsign.sig.profile` | Perfil/estándar de firma PAdES (Adobe/ICP-Brasil/ETSI). | `PDF_BASIC`, `ADRT`, `PADES_B`, etc. |
+| `solidsign.sig.sigFieldMeasurementUnit` | Unidad de medida para las coordenadas del campo de firma. | `PIXELS` o `MILLIMETERS` |
+| `solidsign.sig.signatureFieldConfig` | JSON con coordenadas y dimensiones del campo de firma visual. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":380,"width":200,"height":80}]` |
+| `solidsign.sig.signatureImagePaths` | Ruta(s) a la(s) imagen(es) de sello de firma. | `C:/img/sello.png` |
+| `solidsign.sig.reason` | Motivo de la firma (visible en el panel de firmas del PDF). | `Firma digital` |
+| `solidsign.sig.location` | Ubicación geográfica donde se firmó el documento. | `Brasil` |
+| `solidsign.sig.contact` | Información de contacto del firmante. | `contacto@empresa.com` |
+| `solidsign.sig.signatureFieldName` *(opcional)* | Nombre de un campo de firma preexistente en el PDF. | `SignatureField1` |
+| `solidsign.sig.signatureTextConfig` *(opcional)* | JSON con texto personalizado en el campo de firma visual. | `[{"pageNumber":1,"coordinateX":200,"coordinateY":460,"text":"Firmado","fontSize":10,"textColor":"BLACK"}]` |
+| `solidsign.sig.mdpPermissionLevel` *(opcional)* | Nivel MDP para firmas de certificación (1=sin cambios, 2=formularios, 3=anotaciones). | `1` |
+| `solidsign.sig.passwordsForDecryption` *(opcional)* | Array JSON de contraseñas para abrir PDFs cifrados. | `["contraseña1"]` |
+| `solidsign.sig.policyVersion` *(opcional)* | OID de la política de firma ICP-Brasil. | `2.16.76.1.7.1.11.1.3` |
 
 ## Stack
 1. Java 17
@@ -116,10 +140,11 @@ Este proyecto demuestra la integración con la **SolidSign API** para realizar l
 
 ## Cómo Ejecutar
 
-1. **Compilar:** `mvn clean install`
-2. **Configurar:** Defina sus credenciales, certificado y rutas de carpetas locales en el archivo `src/main/resources/application.properties`.
-3. **Iniciar:** `mvn spring-boot:run`
-4. **Probar:** Envíe una solicitud POST a `http://localhost:8080/api/pdf/process-local-folder`. La aplicación escaneará su carpeta de entrada y procesará todos los PDF automáticamente.
+1. **Importar certificado:** Suba el archivo `.pfx` y la contraseña (Base64) mediante `POST /solidsign/dsig/certificates/pkcs12/import` y anote el `certId` devuelto.
+2. **Configurar:** Defina `solidsign.cert.id` con el UUID obtenido y configure los demás parámetros en `src/main/resources/application.properties`.
+3. **Compilar:** `mvn clean install`
+4. **Iniciar:** `mvn spring-boot:run`
+5. **Probar:** Envíe una solicitud POST a `http://localhost:8080/api/pdf/sign-pkcs12`. La aplicación procesará automáticamente todos los PDF encontrados en la carpeta de entrada.
 
 ## Gestión de Errores
 El sistema intercepta errores **400 Bad Request** y registra el JSON detallado de SolidSign para facilitar la depuración de certificados o parámetros inválidos.
